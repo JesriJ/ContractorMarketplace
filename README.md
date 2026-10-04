@@ -1,10 +1,10 @@
 # Contractor Marketplace
 
-This repository is a **demo / portfolio build** of a contractor marketplace. It shows the full product flow—accounts, jobs, bidding, messaging, quotes, recommendations, and reviews—for evaluation and learning. It is **not** an active commercial marketplace, and the original production service is no longer offered.
+This repository includes demo of contractor marketplace. It shows the full product flow—accounts, jobs, bidding, messaging, quotes, recommendations, and reviews—for evaluation and learning. It is **not** an active commercial marketplace, and the original production service is no longer offered.
 
 Sample accounts and data may be reset at any time. Do not use this deployment for real hiring or payment arrangements.
 
-**[Open the demo](https://contractor-marketplace-seven.vercel.app/)**
+**[Open demo](https://contractor-marketplace-seven.vercel.app/)**
 
 ## For customers
 
