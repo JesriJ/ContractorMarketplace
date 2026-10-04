@@ -1,8 +1,10 @@
 # Contractor Marketplace
 
-Customers use Contractor Marketplace to find local contractors, post work, compare bids, hire, message, negotiate quotes, and review completed jobs. Contractors publish a profile, bid on open work, accept service requests, and manage jobs through completion.
+This repository is a **demo / portfolio build** of a contractor marketplace. It shows the full product flow—accounts, jobs, bidding, messaging, quotes, recommendations, and reviews—for evaluation and learning. It is **not** an active commercial marketplace, and the original production service is no longer offered.
 
-**[Open Contractor Marketplace](https://contractor-marketplace-seven.vercel.app/)**
+Sample accounts and data may be reset at any time. Do not use this deployment for real hiring or payment arrangements.
+
+**[Open the demo](https://contractor-marketplace-seven.vercel.app/)**
 
 ## For customers
 
@@ -47,4 +49,4 @@ Each job has one conversation and one review. Ratings shown on contractor profil
 
 ## Stack
 
-Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Prisma, NextAuth.js, and Vercel Blob. The application is hosted on Vercel.
+Next.js, React, TypeScript, Tailwind CSS, PostgreSQL, Prisma, NextAuth.js, and Vercel Blob. The demo is hosted on Vercel.

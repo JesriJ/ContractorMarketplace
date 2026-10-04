@@ -78,4 +78,4 @@ Authenticated clients upload images through `/api/blob/upload` using Vercel Blob
 
 ## Production
 
-The live application runs on Vercel with PostgreSQL and Vercel Blob. Account credentials, `BLOB_READ_WRITE_TOKEN`, legal identity env vars, and optional `GEMINI_API_KEY` stay in the deployment environment.
+This project is maintained as a **demo deployment** on Vercel with PostgreSQL and Vercel Blob. It is not a live commercial marketplace; the original production service is no longer available. Account credentials, `BLOB_READ_WRITE_TOKEN`, legal identity env vars, and optional `GEMINI_API_KEY` stay in the deployment environment.
