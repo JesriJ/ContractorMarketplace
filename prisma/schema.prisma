@@ -1,0 +1,338 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  password          String
+  role              UserRole
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  contractorProfile ContractorProfile?
+  conversations     Conversation[]
+  hireRequests      HireRequest[]
+  jobs              Job[]
+  messages          Message[]
+  quotesAuthored    Quote[]            @relation("QuoteAuthor")
+  quoteAcceptances  Quote[]            @relation("QuoteAcceptor")
+  consents          LegalConsent[]
+  auditEvents       AuditEvent[]
+  deactivatedAt     DateTime?
+  reviews           Review[]
+}
+
+model ContractorProfile {
+  id                  String              @id @default(cuid())
+  userId              String              @unique
+  companyName         String
+  trade               String
+  bio                 String
+  hourlyRate          Decimal             @db.Decimal(8, 2)
+  yearsExperience     Int
+  city                String
+  state               String
+  skills              String[]            @default([])
+  serviceCategories   String[]            @default([])
+  serviceRadiusMiles  Int                 @default(25)
+  availability        String?
+  availabilityNotes   String?
+  portfolioImages     String[]            @default([])
+  preferredRateMax    Decimal?            @db.Decimal(8, 2)
+  embedding           Float[]             @default([])
+  profileImage        String?
+  verified            Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  bids                Bid[]
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations       Conversation[]
+  hireRequests        HireRequest[]
+  assignedJobs        Job[]
+  quotes              Quote[]
+  reviews             Review[]
+  jobRecommendations  JobRecommendation[]
+  identityAttestedAt  DateTime?
+  licenseAttestedAt   DateTime?
+  insuranceAttestedAt DateTime?
+
+  @@index([trade])
+  @@index([city])
+  @@index([state])
+}
+
+model Job {
+  id                 String              @id @default(cuid())
+  title              String
+  description        String
+  budget             Decimal?            @db.Decimal(10, 2)
+  location           String
+  city               String?
+  state              String?
+  status             JobStatus           @default(OPEN)
+  customerId         String
+  contractorId       String?
+  requiredSkills     String[]            @default([])
+  projectType        String?
+  experienceLevel    String?
+  availabilityNeeded String?
+  imageUrls          String[]            @default([])
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  bids               Bid[]
+  conversation       Conversation?
+  hireRequest        HireRequest?
+  contractor         ContractorProfile?  @relation(fields: [contractorId], references: [id])
+  customer           User                @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  quotes             Quote[]
+  review             Review?
+  requirements       JobRequirements?
+  recommendations    JobRecommendation[]
+
+  @@index([status])
+  @@index([customerId])
+  @@index([contractorId])
+  @@index([city])
+  @@index([state])
+}
+
+model JobRequirements {
+  id               String           @id @default(cuid())
+  jobId            String           @unique
+  requiredSkills   String[]         @default([])
+  preferredSkills  String[]         @default([])
+  projectType      String?
+  experienceLevel  String?
+  budgetMin        Decimal?         @db.Decimal(10, 2)
+  budgetMax        Decimal?         @db.Decimal(10, 2)
+  locationText     String?
+  requiredByDate   DateTime?
+  availabilityHint String?
+  rawExtraction    Json?
+  embedding        Float[]          @default([])
+  extractedAt      DateTime?
+  extractionStatus ExtractionStatus @default(PENDING)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  job              Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model JobRecommendation {
+  id           String            @id @default(cuid())
+  jobId        String
+  contractorId String
+  score        Float
+  breakdown    Json
+  reasons      Json
+  computedAt   DateTime          @default(now())
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  job          Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  contractor   ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, contractorId])
+  @@index([contractorId, score])
+  @@index([jobId, score])
+}
+
+model RecommendationEvent {
+  id           String   @id @default(cuid())
+  userId       String?
+  jobId        String?
+  contractorId String?
+  eventType    String
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  @@index([eventType, createdAt])
+  @@index([userId, createdAt])
+}
+
+model Bid {
+  id                String            @id @default(cuid())
+  jobId             String
+  contractorId      String
+  amount            Decimal           @db.Decimal(10, 2)
+  message           String
+  estimatedDuration String
+  status            BidStatus         @default(PENDING)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  contractor        ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  job               Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, contractorId])
+  @@index([contractorId])
+}
+
+model HireRequest {
+  id           String            @id @default(cuid())
+  customerId   String
+  contractorId String
+  message      String
+  status       HireRequestStatus @default(PENDING)
+  jobId        String?           @unique
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  contractor   ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  customer     User              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  job          Job?              @relation(fields: [jobId], references: [id])
+
+  @@index([customerId])
+  @@index([contractorId])
+  @@index([status])
+}
+
+model Conversation {
+  id                   String            @id @default(cuid())
+  customerId           String
+  contractorId         String
+  jobId                String            @unique
+  customerLastReadAt   DateTime?
+  contractorLastReadAt DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  contractor           ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  customer             User              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  job                  Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  messages             Message[]
+
+  @@index([customerId])
+  @@index([contractorId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model Review {
+  id           String            @id @default(cuid())
+  jobId        String            @unique
+  customerId   String
+  contractorId String
+  rating       Int
+  comment      String
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  contractor   ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  customer     User              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  job          Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([contractorId])
+}
+
+model Quote {
+  id                String            @id @default(cuid())
+  jobId             String
+  contractorId      String
+  authorId          String
+  acceptedById      String?
+  version           Int
+  status            QuoteStatus       @default(SENT)
+  scope             String
+  laborAmount       Decimal           @db.Decimal(10, 2)
+  materialsAmount   Decimal           @default(0) @db.Decimal(10, 2)
+  taxAmount         Decimal           @default(0) @db.Decimal(10, 2)
+  totalAmount       Decimal           @db.Decimal(10, 2)
+  depositTerms      String?
+  milestoneTerms    String?
+  schedule          String
+  cancellationTerms String
+  expiresAt         DateTime
+  acceptedAt        DateTime?
+  declinedAt        DateTime?
+  paidOutsideAt     DateTime?
+  paidOutsideById   String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  job               Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  contractor        ContractorProfile @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  author            User              @relation("QuoteAuthor", fields: [authorId], references: [id])
+  acceptedBy        User?             @relation("QuoteAcceptor", fields: [acceptedById], references: [id])
+
+  @@unique([jobId, version])
+  @@index([jobId, status])
+}
+
+model LegalConsent {
+  id             String   @id @default(cuid())
+  userId         String
+  termsVersion   String
+  privacyVersion String
+  ipAddress      String?
+  userAgent      String?
+  acceptedAt     DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, acceptedAt])
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+}
+
+enum UserRole {
+  CUSTOMER
+  CONTRACTOR
+}
+
+enum JobStatus {
+  OPEN
+  BIDDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  PENDING_CONFIRMATION
+}
+
+enum BidStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum HireRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum ExtractionStatus {
+  PENDING
+  READY
+  FAILED
+}
