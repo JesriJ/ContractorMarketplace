@@ -31,7 +31,7 @@ Pricing is negotiated with quotes. The platform does not process card payments. 
 
 ## Recommendations
 
-Gemini (optional) extracts structured job requirements when a job is created or updated. Matching uses hard filters plus a weighted score over skills, experience, location (city/state), availability, rating, price, and optional embeddings. Without `GEMINI_API_KEY`, heuristic extraction still powers recommendations. Contractors see recommended jobs on the dashboard; customers see recommended contractors on open job pages.
+Gemini extracts structured job requirements when a job is created or updated. Matching uses hard filters plus a weighted score over skills, experience, location (city/state), availability, rating, price, and optional embeddings. Without Gemini, heuristic extraction still powers recommendations. Contractors see recommended jobs on the dashboard; customers see recommended contractors on open job pages.
 
 ## Images
 
